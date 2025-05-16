@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://localhost:3000'; // Updated to use port 3001
+const API_URL = 'https://marmatofood.onrender.com'; // Updated to use port 3001
 
 // Create axios instance
 const api = axios.create({
