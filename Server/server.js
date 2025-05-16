@@ -6,7 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs-extra");
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*', // Use environment variable or allow all origins
@@ -98,11 +98,33 @@ app.post("/order", upload.single('photo'), async (req, res) => {
       return res.status(400).json({ error: "Please upload a food photo" });
     }
 
+    // Log the request body and file to debug
+    console.log('Request body:', req.body);
+    console.log('Uploaded file:', req.file.filename);
+
     // Create new order with file path
     const orderData = {
-      ...req.body,
+      name: req.body.name,
+      phone: req.body.phone,
+      city: req.body.city,
+      pincode: req.body.pincode,
+      food: req.body.food,
       photoPath: req.file.filename // Store just the filename
     };
+
+    // Validate that all required fields are present
+    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food', 'photoPath'];
+    const missingFields = requiredFields.filter(field => !orderData[field]);
+
+    if (missingFields.length > 0) {
+      // Delete the uploaded file since we're not saving the order
+      if (req.file) {
+        fs.removeSync(path.join(uploadsDir, req.file.filename));
+      }
+      return res.status(400).json({
+        error: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
 
     const order = new Order(orderData);
     await order.save();
@@ -110,7 +132,7 @@ app.post("/order", upload.single('photo'), async (req, res) => {
   } catch (err) {
     // If there was an error and a file was uploaded, delete it
     if (req.file) {
-      fs.removeSync(req.file.path);
+      fs.removeSync(path.join(uploadsDir, req.file.filename));
     }
 
     // Handle multer errors
@@ -121,6 +143,7 @@ app.post("/order", upload.single('photo'), async (req, res) => {
       return res.status(400).json({ error: err.message });
     }
 
+    console.error('Error creating order:', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -137,17 +160,30 @@ app.get("/order", async (req, res) => {
 // Handle file upload for updating orders
 app.put("/order", upload.single('photo'), async (req, res) => {
   try {
-    const { _id, ...update } = req.body;
+    const { _id, ...updateFields } = req.body;
 
     if (!_id) {
       return res.status(400).json({ error: "Order _id required for update" });
     }
+
+    // Log the request body and file to debug
+    console.log('Update request body:', req.body);
+    console.log('Update file:', req.file ? req.file.filename : 'No file uploaded');
 
     // Find the existing order
     const existingOrder = await Order.findById(_id);
     if (!existingOrder) {
       return res.status(404).json({ error: "Order not found" });
     }
+
+    // Create update object with explicit fields
+    const update = {
+      name: updateFields.name,
+      phone: updateFields.phone,
+      city: updateFields.city,
+      pincode: updateFields.pincode,
+      food: updateFields.food
+    };
 
     // If a new file was uploaded, update the photo path and delete the old file
     if (req.file) {
@@ -161,6 +197,25 @@ app.put("/order", upload.single('photo'), async (req, res) => {
 
       // Update with new file path
       update.photoPath = req.file.filename;
+    } else {
+      // If no new file was uploaded, require the existing photo
+      if (!existingOrder.photoPath) {
+        return res.status(400).json({ error: "Photo is required" });
+      }
+    }
+
+    // Validate that all required fields are present
+    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food'];
+    const missingFields = requiredFields.filter(field => !update[field]);
+
+    if (missingFields.length > 0) {
+      // Delete the uploaded file if there was one
+      if (req.file) {
+        fs.removeSync(path.join(uploadsDir, req.file.filename));
+      }
+      return res.status(400).json({
+        error: `Missing required fields: ${missingFields.join(', ')}`
+      });
     }
 
     // Update the order
@@ -169,9 +224,10 @@ app.put("/order", upload.single('photo'), async (req, res) => {
   } catch (err) {
     // If there was an error and a file was uploaded, delete it
     if (req.file) {
-      fs.removeSync(req.file.path);
+      fs.removeSync(path.join(uploadsDir, req.file.filename));
     }
 
+    console.error('Error updating order:', err);
     res.status(400).json({ error: err.message });
   }
 });
