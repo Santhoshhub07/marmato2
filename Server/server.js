@@ -73,6 +73,11 @@ const orderSchema = new mongoose.Schema({
   city: { type: String, required: true },
   pincode: { type: String, required: true },
   food: { type: String, required: true },
+  category: {
+    type: String,
+    required: true,
+    enum: ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Dessert', 'Beverage']
+  },
   photoPath: { type: String, required: true }, // Store the path to the image
 }, {
   timestamps: true, // Add createdAt and updatedAt fields
@@ -109,11 +114,12 @@ app.post("/order", upload.single('photo'), async (req, res) => {
       city: req.body.city,
       pincode: req.body.pincode,
       food: req.body.food,
+      category: req.body.category,
       photoPath: req.file.filename // Store just the filename
     };
 
     // Validate that all required fields are present
-    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food', 'photoPath'];
+    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food', 'category', 'photoPath'];
     const missingFields = requiredFields.filter(field => !orderData[field]);
 
     if (missingFields.length > 0) {
@@ -182,11 +188,14 @@ app.put("/order", upload.single('photo'), async (req, res) => {
       phone: updateFields.phone,
       city: updateFields.city,
       pincode: updateFields.pincode,
-      food: updateFields.food
+      food: updateFields.food,
+      category: updateFields.category
     };
 
     // If a new file was uploaded, update the photo path and delete the old file
     if (req.file) {
+      console.log('New file uploaded for update:', req.file.filename);
+
       // Delete the old file if it exists
       if (existingOrder.photoPath) {
         const oldFilePath = path.join(uploadsDir, existingOrder.photoPath);
@@ -198,14 +207,18 @@ app.put("/order", upload.single('photo'), async (req, res) => {
       // Update with new file path
       update.photoPath = req.file.filename;
     } else {
-      // If no new file was uploaded, require the existing photo
+      // If no new file was uploaded, keep the existing photo path
+      console.log('No new file uploaded, keeping existing photo:', existingOrder.photoPath);
+
+      // Don't include photoPath in the update object - this will keep the existing value
+      // But make sure the existing photo exists
       if (!existingOrder.photoPath) {
         return res.status(400).json({ error: "Photo is required" });
       }
     }
 
     // Validate that all required fields are present
-    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food'];
+    const requiredFields = ['name', 'phone', 'city', 'pincode', 'food', 'category'];
     const missingFields = requiredFields.filter(field => !update[field]);
 
     if (missingFields.length > 0) {

@@ -12,8 +12,21 @@ export default function OrderForm({ existingOrder = null }) {
     city: existingOrder?.city || '',
     pincode: existingOrder?.pincode || '',
     food: existingOrder?.food || '',
-    photo: existingOrder?.photo || '',
+    category: existingOrder?.category || 'Vegetarian', // Default to Vegetarian
+    photo: null, // Will be set to File object when user selects a file
   });
+
+  // Store the existing image URL separately
+  const [existingImageUrl, setExistingImageUrl] = useState(existingOrder?.photoUrl || '');
+
+  // Food categories
+  const foodCategories = [
+    'Vegetarian',
+    'Non-Vegetarian',
+    'Vegan',
+    'Dessert',
+    'Beverage'
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,7 +65,14 @@ export default function OrderForm({ existingOrder = null }) {
       return;
     }
 
-    if (!formData.photo) {
+    if (!formData.category) {
+      toast.error('Please select a food category');
+      return;
+    }
+
+    // For new orders, require a photo
+    // For existing orders, either a new photo or the existing one is fine
+    if (!formData.photo && !existingOrder) {
       toast.error('Please upload a food photo');
       return;
     }
@@ -69,13 +89,18 @@ export default function OrderForm({ existingOrder = null }) {
       formDataToSend.append('city', formData.city.trim());
       formDataToSend.append('pincode', formData.pincode.trim());
       formDataToSend.append('food', formData.food.trim());
+      formDataToSend.append('category', formData.category);
 
       // Add the file if it's a File object
       if (formData.photo instanceof File) {
         formDataToSend.append('photo', formData.photo);
-      } else if (existingOrder && existingOrder.photoUrl && !formData.photo) {
-        // If updating and no new photo was selected, we need to handle this case
-        toast.error('Please select a photo again for the update');
+      } else if (existingOrder) {
+        // If we're updating an existing order and no new photo was selected,
+        // we don't need to send the photo again - the server will keep the existing one
+        console.log('Using existing photo, not sending a new one');
+      } else {
+        // This should not happen due to our validation above
+        toast.error('Please select a photo');
         setIsSubmitting(false);
         return;
       }
@@ -178,19 +203,41 @@ export default function OrderForm({ existingOrder = null }) {
           </div>
         </div>
 
-        <div>
-          <label htmlFor="food" className="block text-sm font-medium text-gray-700 mb-1">
-            Food Item
-          </label>
-          <input
-            type="text"
-            id="food"
-            name="food"
-            value={formData.food}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="food" className="block text-sm font-medium text-gray-700 mb-1">
+              Food Item
+            </label>
+            <input
+              type="text"
+              id="food"
+              name="food"
+              value={formData.food}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              Food Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              {foodCategories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div>
@@ -205,7 +252,8 @@ export default function OrderForm({ existingOrder = null }) {
             onChange={handlePhotoChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
-          {formData.photo && (
+          {/* Show image preview */}
+          {(formData.photo || existingOrder?.photoUrl) && (
             <div className="mt-2">
               <img
                 src={formData.photo instanceof File
@@ -213,7 +261,16 @@ export default function OrderForm({ existingOrder = null }) {
                   : existingOrder?.photoUrl || ''}
                 alt="Food preview"
                 className="h-40 object-cover rounded-md"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
+                }}
               />
+              {existingOrder?.photoUrl && !formData.photo && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Current image will be kept unless you select a new one
+                </p>
+              )}
             </div>
           )}
         </div>

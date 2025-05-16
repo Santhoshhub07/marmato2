@@ -18,10 +18,10 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
+            <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium text-gray-600 hover:text-gray-900 font-medium flex justify-center items-center">
               Home
             </Link>
-            <Link to="/orders" className="text-gray-600 hover:text-gray-900 font-medium">
+            <Link to="/orders" className="text-gray-600 hover:text-gray-900 font-medium text-gray-600 hover:text-gray-900 font-medium flex justify-center items-center">
               Orders
             </Link>
             <Link to="/new-order" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
