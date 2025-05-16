@@ -23,11 +23,8 @@ export default function OrderForm({ existingOrder = null }) {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, photo: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      // Just store the file object, not the base64 data
+      setFormData(prev => ({ ...prev, photo: file }));
     }
   };
 
@@ -63,11 +60,28 @@ export default function OrderForm({ existingOrder = null }) {
     setIsSubmitting(true);
 
     try {
+      // Create a FormData object to send the file
+      const formDataToSend = new FormData();
+
+      // Add all text fields
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('city', formData.city);
+      formDataToSend.append('pincode', formData.pincode);
+      formDataToSend.append('food', formData.food);
+
+      // Add the file if it's a File object
+      if (formData.photo instanceof File) {
+        formDataToSend.append('photo', formData.photo);
+      }
+
       if (existingOrder?._id) {
-        await orderService.updateOrder({ _id: existingOrder._id, ...formData });
+        // Add the ID for updates
+        formDataToSend.append('_id', existingOrder._id);
+        await orderService.updateOrder(formDataToSend);
         toast.success('Order updated successfully!');
       } else {
-        await orderService.createOrder(formData);
+        await orderService.createOrder(formDataToSend);
         toast.success('Order placed successfully!');
       }
       navigate('/orders');
@@ -80,8 +94,8 @@ export default function OrderForm({ existingOrder = null }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md" id="order-section">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md" id="order-section">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">
         {existingOrder ? 'Update Order' : 'Place Your Order'}
       </h2>
 
@@ -178,7 +192,9 @@ export default function OrderForm({ existingOrder = null }) {
           {formData.photo && (
             <div className="mt-2">
               <img
-                src={formData.photo}
+                src={formData.photo instanceof File
+                  ? URL.createObjectURL(formData.photo)
+                  : existingOrder?.photoUrl || ''}
                 alt="Food preview"
                 className="h-40 object-cover rounded-md"
               />

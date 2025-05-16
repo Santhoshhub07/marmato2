@@ -31,9 +31,13 @@ export default function OrderCard({ order, onDelete }) {
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="h-48 overflow-hidden">
         <img
-          src={order.photo}
+          src={order.photoUrl}
           alt={order.food}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
+          }}
         />
       </div>
       <div className="p-4">

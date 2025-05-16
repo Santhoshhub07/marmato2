@@ -5,19 +5,19 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Banner />
-      
+
       <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Place Your Order</h2>
           <OrderForm />
         </div>
       </section>
-      
+
       {/* <section className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">Why Choose Us</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-12">
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -27,7 +27,7 @@ export default function Home() {
               <h3 className="text-xl font-semibold mb-2">Fast Delivery</h3>
               <p className="text-gray-600">We deliver your food while it's still hot and fresh.</p>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,7 +37,7 @@ export default function Home() {
               <h3 className="text-xl font-semibold mb-2">Quality Food</h3>
               <p className="text-gray-600">We use only the freshest ingredients for our dishes.</p>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

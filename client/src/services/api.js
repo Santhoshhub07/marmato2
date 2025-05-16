@@ -1,14 +1,16 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+<<<<<<< HEAD
 const API_URL = 'https://marmatofood.onrender.com'; // Updated to use port 3001
+=======
+// Get API URL from environment variables
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+>>>>>>> 24fdaef (made responsive)
 
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Error handler helper function
@@ -44,9 +46,13 @@ export const orderService = {
   },
 
   // Create a new order
-  createOrder: async (orderData) => {
+  createOrder: async (formData) => {
     try {
-      const response = await api.post('/order', orderData);
+      const response = await api.post('/order', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return handleApiSuccess(response.data, 'Order created successfully!');
     } catch (error) {
       return handleApiError(error, 'Failed to create order');
@@ -54,9 +60,13 @@ export const orderService = {
   },
 
   // Update an existing order
-  updateOrder: async (orderData) => {
+  updateOrder: async (formData) => {
     try {
-      const response = await api.put('/order', orderData);
+      const response = await api.put('/order', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return handleApiSuccess(response.data, 'Order updated successfully!');
     } catch (error) {
       return handleApiError(error, 'Failed to update order');

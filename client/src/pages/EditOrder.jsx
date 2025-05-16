@@ -44,8 +44,8 @@ export default function EditOrder() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12 flex justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
@@ -53,8 +53,8 @@ export default function EditOrder() {
   // Error handling is now done via toast notifications
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 text-center">Edit Order</h1>
+    <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Edit Order</h1>
       <OrderForm existingOrder={order} />
     </div>
   );
