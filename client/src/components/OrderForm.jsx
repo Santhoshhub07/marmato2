@@ -64,15 +64,26 @@ export default function OrderForm({ existingOrder = null }) {
       const formDataToSend = new FormData();
 
       // Add all text fields
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('pincode', formData.pincode);
-      formDataToSend.append('food', formData.food);
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('phone', formData.phone.trim());
+      formDataToSend.append('city', formData.city.trim());
+      formDataToSend.append('pincode', formData.pincode.trim());
+      formDataToSend.append('food', formData.food.trim());
 
       // Add the file if it's a File object
       if (formData.photo instanceof File) {
         formDataToSend.append('photo', formData.photo);
+      } else if (existingOrder && existingOrder.photoUrl && !formData.photo) {
+        // If updating and no new photo was selected, we need to handle this case
+        toast.error('Please select a photo again for the update');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Log the form data to debug
+      console.log('Form data being sent:');
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + (pair[0] === 'photo' ? 'File object' : pair[1]));
       }
 
       if (existingOrder?._id) {
@@ -86,7 +97,12 @@ export default function OrderForm({ existingOrder = null }) {
       }
       navigate('/orders');
     } catch (err) {
-      // Error is already handled by the API service
+      // Show the specific error message from the server if available
+      if (err.response && err.response.data && err.response.data.error) {
+        toast.error(`Error: ${err.response.data.error}`);
+      } else {
+        toast.error('Failed to submit the form. Please try again.');
+      }
       console.error('Form submission error:', err);
     } finally {
       setIsSubmitting(false);
